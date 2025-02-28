@@ -1,56 +1,118 @@
-from pynput.mouse import Controller
+from pynput.mouse import Controller,Button
+from pynput.mouse import Listener
 import time
 import tkinter as tk
 import random as rd
+import threading
 
 mouse = Controller()
 
-# input = input("Write a message: ")
+programStatus = False
+recoredStatus = False
+listOfPositions = []
+listener = None
+thread1 = None
+clickCount = 0
 
-# print("\nYour message was: " + input)
+def startProgram():
+    global programStatus, listOfPositions
+    if not programStatus :
+       programStatus = True
+       button1.config(text="Stop",bg="pink")
 
-def on_click():
-    # num = 
-    if(rd.random() < 0.5):
-        label1.config(text="Button Clicket!", bg ="pink")
-        button1.config(text="you dum, I am smart, hahahhaha!!!", bg="gray")
-        root1.title("hej")
+       thread2 = threading.Thread(target=runRecording,daemon=True)
+       thread2.start()
     else:
-        label1.config(text="Me is back", bg="gray")
-        button1.config(text="what?!?!", bg ="pink")
+        programStatus = False
+        button1.config(text="Start",bg="White")
 
-root1 = tk.Tk()
-root1.title("TestTitel")
-root1.geometry("400x400")
-# root.resizable(width= False,height=False)
 
-grid_frame = tk.Frame(root1, bg="lightgray")
-grid_frame.pack(fill="y", padx=20)
+def on_click(x, y, button, pressed):
+    global clickCount
+    if pressed:  # Only record when the button is pressed (not released)
+        ##print(f"Mouse clicked at ({x}, {y})")
+        clickCount += 1
+        label3.config(text="Nummber of Clicks: " + str(clickCount))
+        listOfPositions.append((x, y))  # Store the coordinates
 
-# Add labels inside the frame using grid
-label1 = tk.Label(grid_frame, text="Row 0, Column 0")
-label1.grid(row=0, column=0, padx=5, pady=5)
+def startRecored():
+    global recoredStatus, listener, thread1, clickCount, listOfPositions
+    if not recoredStatus:
+        recoredStatus = True
+        button2.config(text="Stop", bg="pink")
+        clickCount = 0
+        listOfPositions = []
+        
+        # Start Listener in a separate thread
+        thread1 = threading.Thread(target=mouseRecorder, daemon=True)
+        thread1.start()
+    else:
+        recoredStatus = False
+        button2.config(text="Start", bg="White")
+        
+        if listener is not None :
+            listener.stop()
+            clickCount -= 1
+            label3.config(text="Nummber of Clicks: " + str(clickCount))
+            listOfPositions.pop()
+        #print(listOfPositions)
 
-label2 = tk.Label(grid_frame, text="Row 0, Column 1")
-label2.grid(row=0, column=1, padx=5, pady=5)
+def runRecording() :
+    global programStatus, timeDelay
+    while programStatus :
+        for p in listOfPositions :
+            # print(p)
+            # print((p[0] + round(rd.random()*4-2),p[1]+ round(rd.random()*4-2)))
+            mouse.position = (p[0] + round(rd.random()*4-2),p[1]+ round(rd.random()*4-2))
+            time.sleep(0.1)
+            mouse.click(Button.left, 1)
+            delay = 1
+            if timeDelay.get() != "" : delay = timeDelay.get()
+            time.sleep(float(delay) + rd.random()*0.5)
+            if not programStatus :
+                break
+        timeToWait = 3
+        if programStatus :
+            for i in range(timeToWait*10) :
+                time.sleep(0.1)
+                if not programStatus :
+                    break
+                button1.config(text="Cancel in: " + str(round(float(timeToWait - i/10),1)))
+            button1.config(text="Stop",bg="pink")
+            if not programStatus : button1.config(text="Start",bg="White")
 
-label3 = tk.Label(grid_frame, text="Row 1, Column 0")
-label3.grid(row=1, column=0, padx=5, pady=5)
+def mouseRecorder() :
+    global listener
+    with Listener(on_click=on_click) as listener:
+        listener.join()
 
-label4 = tk.Label(grid_frame, text="Row 1, Column 1")
-label4.grid(row=2, column=4, padx=5, pady=5)
+# Make Window
 
-label5 = tk.Label(grid_frame, text="Row 1sgsfdf, Column 1")
-label5.grid(row=2, column=3, padx=5, pady=5)
+root = tk.Tk()
+root.title("AutoClicker")
+root.geometry("200x250")
 
-root2 = tk.Tk()
-root2.title("TestTitel")
-root2.geometry("400x400")
+timeDelay = tk.StringVar()
 
-label3 = tk.Label(root2, text="test testsson",bg="pink")
-label3.place(x=10,y=1)
+label1 = tk.Label(root, text="Start Program")
+label1.pack(pady=5)
 
-button1 = tk.Button(root2, text="Button hej")
-button1.place(x=234,y=390)
+button1 = tk.Button(root, text="Start",command=startProgram)
+button1.pack(pady=5)
 
-root2.mainloop()
+label2 = tk.Label(root, text="Recored Movment")
+label2.pack(pady=5)
+
+label3 = tk.Label(root, text="Nummber of Clicks: " + str(clickCount))
+label3.pack(pady=0)
+
+button2 = tk.Button(root, text="Start",command=startRecored)
+button2.pack(pady=5)
+
+label4 = tk.Label(root, text="Time Delay")
+label4.pack(pady=0)
+
+entry = tk.Entry(root, textvariable=timeDelay)
+entry.pack(pady=5)
+
+root.mainloop()
