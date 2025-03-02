@@ -61,6 +61,7 @@ def startRecored():
 def runRecording() :
     global programStatus, timeDelay
     while programStatus :
+        i = 0
         for p in listOfPositions :
             # print(p)
             # print((p[0] + round(rd.random()*4-2),p[1]+ round(rd.random()*4-2)))
@@ -68,11 +69,12 @@ def runRecording() :
             time.sleep(0.1)
             mouse.click(Button.left, 1)
             delay = 1
-            if timeDelay.get() != "" : delay = timeDelay.get()
+            if deltaList[i].get() != "" : delay = deltaList[i].get()
             time.sleep(float(delay) + rd.random()*0.5)
+            i += 1
             if not programStatus :
                 break
-        timeToWait = 60
+        timeToWait = 68
         if programStatus :
             for i in range(timeToWait*10) :
                 time.sleep(0.1)
@@ -90,10 +92,11 @@ def mouseRecorder() :
 # Make Window
 
 root = tk.Tk()
-root.title("AutoClicker")
+root.title("AutoClicker - Cooking")
 root.geometry("200x250")
 
 timeDelay = tk.StringVar()
+deltaList = [tk.StringVar() for i in range(5)]
 
 label1 = tk.Label(root, text="Start Program")
 label1.pack(pady=5)
@@ -114,6 +117,11 @@ label4 = tk.Label(root, text="Time Delay")
 label4.pack(pady=0)
 
 entry1 = tk.Entry(root, textvariable=timeDelay)
-entry1.pack(pady=5)
+#entry1.pack(pady=5)
+
+entries = [tk.Entry(root, textvariable=var) for var in deltaList]
+
+for entry in entries:
+    entry.pack(pady=5)
 
 root.mainloop()
