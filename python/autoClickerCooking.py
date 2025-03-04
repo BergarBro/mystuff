@@ -37,7 +37,7 @@ def on_click(x, y, button, pressed):
         listOfPositions.append((pos[0], pos[1]))  # Store the coordinates
 
 def startRecored():
-    global recoredStatus, listener, thread1, clickCount, listOfPositions
+    global recoredStatus, listener, thread1, clickCount, listOfPositions, entries, deltaList
     if not recoredStatus:
         recoredStatus = True
         button2.config(text="Stop", bg="pink")
@@ -47,6 +47,9 @@ def startRecored():
         # Start Listener in a separate thread
         thread1 = threading.Thread(target=mouseRecorder, daemon=True)
         thread1.start()
+
+        for entry in entries:
+            entry.pack_forget()
     else:
         recoredStatus = False
         button2.config(text="Start", bg="White")
@@ -57,6 +60,12 @@ def startRecored():
             label3.config(text="Nummber of Clicks: " + str(clickCount))
             listOfPositions.pop()
         print(listOfPositions)
+
+        deltaList = [tk.StringVar() for i in range(clickCount)]
+        entries = [tk.Entry(root, textvariable=var) for var in deltaList]
+
+        for entry in entries:
+            entry.pack(pady=5)
 
 def runRecording() :
     global programStatus, timeDelay
@@ -74,7 +83,7 @@ def runRecording() :
             i += 1
             if not programStatus :
                 break
-        timeToWait = 68
+        timeToWait = 4
         if programStatus :
             for i in range(timeToWait*10) :
                 time.sleep(0.1)
@@ -96,7 +105,8 @@ root.title("AutoClicker - Cooking")
 root.geometry("200x250")
 
 timeDelay = tk.StringVar()
-deltaList = [tk.StringVar() for i in range(5)]
+deltaList = []
+entries = []
 
 label1 = tk.Label(root, text="Start Program")
 label1.pack(pady=5)
@@ -113,15 +123,11 @@ label3.pack(pady=0)
 button2 = tk.Button(root, text="Start",command=startRecored)
 button2.pack(pady=5)
 
-label4 = tk.Label(root, text="Time Delay")
+label4 = tk.Label(root, text="Time Between Clicks: (sek)")
 label4.pack(pady=0)
 
 entry1 = tk.Entry(root, textvariable=timeDelay)
 #entry1.pack(pady=5)
 
-entries = [tk.Entry(root, textvariable=var) for var in deltaList]
-
-for entry in entries:
-    entry.pack(pady=5)
 
 root.mainloop()
