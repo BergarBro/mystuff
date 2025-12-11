@@ -3,7 +3,7 @@ import System.IO
 
 main10 :: IO ()
 main10 = do 
-    content <- readFile "input1.txt"
+    content <- readFile "haskell\\AoC\\2025\\input1.txt"
     let ls = lines content
     let inst = map convertLR ls 
     let dial = applie inst []
@@ -32,7 +32,7 @@ findZero _ = 0
 
 main11 :: IO ()
 main11 = do 
-    content <- readFile "input1.txt"
+    content <- readFile "haskell\\AoC\\2025\\input1.txt"
     let ls = lines content
     let inst = map convertLR_ ls 
     let dial = applie_ inst []
@@ -57,7 +57,7 @@ applie_ (x:xs) (y:ys) = applie_ xs (countRot y x :(y:ys))
 
 main20 :: IO ()
 main20 = do
-    content <- readFile "input2.txt"
+    content <- readFile "haskell\\AoC\\2025\\input2.txt"
     let ls = splitString content []
     let interval = concat (map makeInterval ls)
     let filtered = map check11 interval
@@ -100,7 +100,34 @@ splitString (x:xs) ys   = splitString xs (ys++[x])
 
 main21 :: IO ()
 main21 = do
-    content <- readFile "input2_test.txt"
+    content <- readFile "haskell\\AoC\\2025\\input2.txt"
     let ls = splitString content []
     let interval = concat (map makeInterval ls)
-    print interval
+    let filtered = filter (\x -> let y = show x in findReps (removeImp (getAlt y)) y) interval
+    let sol = sum filtered
+    print sol
+
+split :: [Char] -> [[Char]]
+split [] = []
+split (x:xs) = [[x]] ++ split xs
+
+getAlt :: [Char] -> [[Char]]
+getAlt xs = let l = length xs 
+            in map (\x -> concat (take x (split xs))) [1..l]
+
+removeImp :: [[Char]] -> [[Char]]
+removeImp xs = let l = length xs
+               in init (filter (\x -> (rem l (length x)) == 0) xs)
+
+findRep :: [Char] -> [Char] -> Bool
+findRep xs [] = True
+findRep xs ys = let l = length xs
+                in case (take l ys) == xs of
+                    True  -> findRep xs (drop l ys)
+                    False -> False
+
+findReps :: [[Char]] -> [Char] -> Bool
+findReps [] y = False
+findReps (x:xs) y = or (findRep x y : [findReps xs y])
+
+h = ["11", "12", "13"]
