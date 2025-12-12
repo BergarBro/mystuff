@@ -130,4 +130,18 @@ findReps :: [[Char]] -> [Char] -> Bool
 findReps [] y = False
 findReps (x:xs) y = or (findRep x y : [findReps xs y])
 
-h = ["11", "12", "13"]
+
+
+main30 :: IO ()
+main30 = do
+    content <- readFile "haskell\\AoC\\2025\\input3_test.txt"
+    let ls = lines content 
+    let lsInt = map strToInt ls
+    print lsInt
+
+strToInt :: [Char] -> [Int]
+strToInt [] = []
+strToInt (x:xs) = (read [x] :: Int) : strToInt xs
+
+firstNumber :: [Int] -> Int
+firstNumber = head.reverse.sort.init
