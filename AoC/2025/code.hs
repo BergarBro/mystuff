@@ -3,7 +3,7 @@ import System.IO
 
 main10 :: IO ()
 main10 = do 
-    content <- readFile "haskell\\AoC\\2025\\input1.txt"
+    content <- readFile "AoC\\2025\\input1.txt"
     let ls = lines content
     let inst = map convertLR ls 
     let dial = applie inst []
@@ -32,7 +32,7 @@ findZero _ = 0
 
 main11 :: IO ()
 main11 = do 
-    content <- readFile "haskell\\AoC\\2025\\input1.txt"
+    content <- readFile "AoC\\2025\\input1.txt"
     let ls = lines content
     let inst = map convertLR_ ls 
     let dial = applie_ inst []
@@ -57,7 +57,7 @@ applie_ (x:xs) (y:ys) = applie_ xs (countRot y x :(y:ys))
 
 main20 :: IO ()
 main20 = do
-    content <- readFile "haskell\\AoC\\2025\\input2.txt"
+    content <- readFile "AoC\\2025\\input2.txt"
     let ls = splitString content []
     let interval = concat (map makeInterval ls)
     let filtered = map check11 interval
@@ -100,7 +100,7 @@ splitString (x:xs) ys   = splitString xs (ys++[x])
 
 main21 :: IO ()
 main21 = do
-    content <- readFile "haskell\\AoC\\2025\\input2.txt"
+    content <- readFile "AoC\\2025\\input2.txt"
     let ls = splitString content []
     let interval = concat (map makeInterval ls)
     let filtered = filter (\x -> let y = show x in findReps (removeImp (getAlt y)) y) interval
@@ -134,7 +134,7 @@ findReps (x:xs) y = or (findRep x y : [findReps xs y])
 
 main30 :: IO ()
 main30 = do
-    content <- readFile "haskell\\AoC\\2025\\input3_test.txt"
+    content <- readFile "AoC\\2025\\input3_test.txt"
     let ls = lines content 
     let lsInt = map strToInt ls
     print lsInt
