@@ -35,25 +35,26 @@ def main31() :
             list.append(str(int(line)))
     sol = []
     for number in list :
-        
-        indexs = []
-        for j in range(11) :
-            biggest = 0
+        numbers = []
+        lastInt = -1
+        lastIndex = -1
+        for j in range(12) :
             index = 0
-            for i, c in enumerate(number[:-1]) :
-                n =  int(c)
-                if biggest < n and not contains(indexs, i) :
-                    index = i
+            biggest = 0
+            for i, c in enumerate(number) :
+                n = int(c)
+                if n >= biggest :
                     biggest = n
-            indexs.append(index)
-        print(indexs)
-        # for c in number[index+1:] :
-        #     n =  int(c)
-        #     if secondNum < n :
-        #         secondNum = n
-        # sol.append(firstNum*10 + secondNum)
-    # print(sum(sol))
-
+                    index = i
+                # print(biggest, "and index:", index)
+            numbers.append((biggest,index))
+            if index < lastIndex :
+                #?
+                print("hej")
+            lastInt = biggest
+            lastIndex = index
+            number = number[:index] + number[index+1:]
+        print(numbers)
 
 def contains(list, value) :
     for n in list :
