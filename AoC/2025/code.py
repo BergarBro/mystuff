@@ -181,11 +181,62 @@ def main41() :
 
 
 
-def main41() :
-    list = []
+def main50() :
+    list1 = []
+    list2 = []
+    with open("AoC\\2025\\input5.txt", "r") as file :
+        for line in file :
+            line = "".join([c for c in line if c != "\n"])
+            if "-" in line :
+                index = line.find("-")
+                list1.append((int(line[:index]),int(line[index+1:])))
+            else :
+                if len(line) != 0 :
+                    list2.append(int(line))
+    acc = 0
+    for n in list2 :
+        for f, s in list1 :
+            if n >= f and n <= s :
+                acc += 1
+                break
+    print(acc)
+
+
+
+def main51() :
+    brute = False
+    list1 = []
+    list2 = []
     with open("AoC\\2025\\input5_test.txt", "r") as file :
         for line in file :
-            list.append("".join([c for c in line if c != "\n"]))
-    print(list)
+            line = "".join([c for c in line if c != "\n"])
+            if "-" in line :
+                index = line.find("-")
+                list1.append((int(line[:index]),int(line[index+1:])))
+            else :
+                if len(line) != 0 :
+                    list2.append(int(line))
+    list1.sort()
+    if brute :
+        acc = set()
+        for i, j in tqdm(list1) :
+            interval = set([n for n in range(i, j+1)])
+            acc = acc | interval
+    else :
+        acc = []
+        for newIntStart, newIntEnd in tqdm(list1) :
+            if len(acc) == 0 :
+                acc.append((newIntStart, newIntEnd))
+            else :
+                for i, (intStart, intEnd) in enumerate(acc) :
+                    if newIntStart >= intStart and newIntEnd <= intEnd :
+                        break
+                    if newIntEnd > intStart :
+                        acc.append((newIntStart, newIntEnd))
+                        break
+            acc.sort()
+    print(acc)
+    print(len(acc))
 
-main41()
+
+main51()
