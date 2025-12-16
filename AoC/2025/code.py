@@ -1,5 +1,6 @@
 import random as rn
 from tqdm import tqdm
+import math
 
 def main30() :
     list = []
@@ -202,12 +203,12 @@ def main50() :
     print(acc)
 
 
-
+# Does not work!
 def main51() :
     brute = False
     list1 = []
     list2 = []
-    with open("AoC\\2025\\input5_test.txt", "r") as file :
+    with open("AoC\\2025\\input5.txt", "r") as file :
         for line in file :
             line = "".join([c for c in line if c != "\n"])
             if "-" in line :
@@ -224,19 +225,105 @@ def main51() :
             acc = acc | interval
     else :
         acc = []
-        for newIntStart, newIntEnd in tqdm(list1) :
-            if len(acc) == 0 :
-                acc.append((newIntStart, newIntEnd))
-            else :
-                for i, (intStart, intEnd) in enumerate(acc) :
-                    if newIntStart >= intStart and newIntEnd <= intEnd :
-                        break
-                    if newIntEnd > intStart :
-                        acc.append((newIntStart, newIntEnd))
-                        break
-            acc.sort()
-    print(acc)
-    print(len(acc))
+        newFirst = 0
+        newSecond = 0
+        firstIndex = -1
+        secondIndex = -1
+        for testFirst, testSecond in list1 :
+            newFirst = testFirst
+            newSecond = testSecond
+            for index, (first, second) in enumerate(acc) :
+                if testFirst >= first and testFirst <= second :
+                    newFirst = first
+                    firstIndex = index
+                if testSecond >= first and testSecond <= second :
+                    newSecond = second
+                    secondIndex = index
 
+            if secondIndex != -1 :
+                if firstIndex == secondIndex :
+                    del acc[firstIndex]
+                else :
+                    if firstIndex != -1 :
+                        print("delete", secondIndex, "and", firstIndex)
+                        del acc[secondIndex]
+                        del acc[firstIndex]
+                    else :
+                        del acc[secondIndex]
+            else :
+                if firstIndex != -1 :
+                    del acc[firstIndex]
+            acc.append((newFirst, newSecond))
+            acc.sort()
+            firstIndex = -1
+            secondIndex = -1
+    sol = 0
+    for f, s in acc :
+        sol += s+1 - f
+    print(sol)
+
+
+
+def main60() :
+    list = []
+    oper = []
+    with open("AoC\\2025\\input6.txt", "r") as file :
+        for line in file :
+            line = "".join([c for c in line if c != "\n"])
+            if "+" in line :
+                oper = [c for c in line if c != " "]
+            else :
+                numbers = []
+                number = ""
+                for c in line :
+                    if c != " " :
+                        number += c
+                    else :
+                        if number != "" :
+                            numbers.append(int(number))
+                            number = ""
+                if number != "" :
+                    numbers.append(int(number))
+                list.append(numbers)
+    trans_list = [[list[j][i] for j in range(len(list))] for i in range(len(list[0]))]
+    sums = []
+    for i, op in enumerate(oper) :
+        if op == "+" :
+            sums.append(sum(trans_list[i]))
+        else :
+            sums.append(math.prod(trans_list[i]))
+    print(sum(sums))
+
+
+
+def main61() :
+    list = []
+    oper = []
+    with open("AoC\\2025\\input6.txt", "r") as file :
+        for line in file :
+            line = "".join([c for c in line if c != "\n"])
+            if "+" in line :
+                oper = [c for c in line if c != " "]
+            else :
+                list.append(line)
+    trans_list = ["".join([list[j][i] for j in range(len(list))]) for i in range(len(list[0]))]
+    removed_spaces = ["".join([c for c in number if c not in " "]) for number in trans_list]
+    numbers = []
+    sub_numbers = []
+    for str in removed_spaces :
+        if str != "" :
+            sub_numbers.append(int(str))
+        else :
+            numbers.append(sub_numbers)
+            sub_numbers = []
+    numbers.append(sub_numbers)
+
+    sums = []
+    for i, op in enumerate(oper) :
+        if op == "+" :
+            sums.append(sum(numbers[i]))
+        else :
+            sums.append(math.prod(numbers[i]))
+    print(sum(sums))
 
 main51()
