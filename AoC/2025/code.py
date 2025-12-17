@@ -551,18 +551,107 @@ def main90() :
 
 def main91() :
     points = []
-    with open("AoC\\2025\\input9_test.txt", "r") as file :
+    biggest_x = -1
+    biggest_y = -1
+    with open("AoC\\2025\\input9.txt", "r") as file :
         for i, line in enumerate(file) :
             line = "".join([c for c in line if c != "\n"])
             corrds = [int(corrd) for corrd in line.split(",")]
+            if corrds[0] > biggest_x :
+                biggest_x = corrds[0]
+            if corrds[1] > biggest_y :
+                biggest_y = corrds[1]
             points.append(corrds)
+    # print("Startar med grid")
+    # grid = [["." for i in range(biggest_y+3)] for j in range(biggest_x+2)]
+    # print("färdig med grid")
+    nbr_points = len(points)
+    grid = {}
+    u_counter = set()
+    # print_grid(grid, biggest_x+2, biggest_y+3)
+    for i, point in enumerate(points) :
+        print(i+1, "out of", nbr_points, end='\r')
+        x,y = point
+        grid[(x,y)] = "#"
+        oldx, oldy = points[i-1]
+        start_int, end_int, const = (-1,-1,-1)
+        direction = 0
+        if x == oldx :
+            const = x
+            if y > oldy :
+                start_int = oldy
+                end_int = y
+                direction = -1
+            else :
+                start_int = y
+                end_int = oldy
+                direction = 1
+        else :
+            const = y
+            if x > oldx :
+                start_int = oldx
+                end_int = x
+                direction = 1
+            else :
+                start_int = x
+                end_int = oldx
+                direction = -1
+        for j in range(start_int, end_int+1) :
+            if x == oldx :
+                if grid.get((const-direction,j),".") == "." :
+                    grid[(const-direction,j)] = "U"
+                    u_counter.add((const-direction,j))
+                grid[(const,j)] = "X"
+                if grid.get((const+direction,j),".") == "." :
+                    grid[(const+direction,j)] = "I"
+            else :
+                if grid.get((j,const-direction),".") == "." :
+                    grid[(j,const-direction)] = "U"
+                    u_counter.add((j,const-direction))
+                grid[(j,const)] = "X"
+                if grid.get((j,const+direction),".") == "." :
+                    grid[(j,const+direction)] = "I"
+    print()
+    # print_grid(grid, biggest_x+2, biggest_y+3)
+    # print(len(u_counter))
     areas = []
     for p1 in range(len(points)-1) :
         for p2 in range(p1+1,len(points)) :
             dx = abs(points[p1][0]-points[p2][0]+1)
             dy = abs(points[p1][1]-points[p2][1]+1)
-            areas.append(dx*dy)
+            areas.append((dx*dy,(points[p1],points[p2])))
     areas.sort(reverse=True)
-    print(areas[0])
+    sol = -1
+    for i, (area, ((x1,y1),(x2,y2))) in enumerate(areas) :
+        print(i+1, "out of", len(areas), end='\r')
+        xs = [x1,x2]
+        ys = [y1,y2]
+        xs.sort()
+        ys.sort()
+        # print(xs, ys)
+        valid = True
+        # for i in range(xs[0],xs[1]) :
+        #     for j in range(ys[0],ys[1]) :
+        #         if grid.get((i,j),".") == "U" :
+        #             valid = False
+        #             break
+        #     if not valid :
+        #         break
+
+        for (x,y) in u_counter :
+            if xs[0] < x and x < xs[1] :
+                if ys[0] < y and y < ys[1] :
+                    valid = False
+                    break
+        if valid :
+            sol = area
+            break
+    print()
+    print(sol)
+
+def print_grid(grid, x_size, y_size) :
+    new_grid = [[grid.get((i,j),".") for i in range(x_size)] for j in range(y_size)]
+    for row in new_grid :
+        print("".join(row))
 
 main91()
