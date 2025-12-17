@@ -1,6 +1,7 @@
 import random as rn
 from tqdm import tqdm
 import math
+import bisect
 
 def main30() :
     list = []
@@ -203,7 +204,7 @@ def main50() :
     print(acc)
 
 
-# Does not work!
+
 def main51() :
     brute = False
     list1 = []
@@ -326,4 +327,242 @@ def main61() :
             sums.append(math.prod(numbers[i]))
     print(sum(sums))
 
-main51()
+
+
+def main70() :
+    size = -1
+    S_index = -1
+    splitters = []
+    with open("AoC\\2025\\input7.txt", "r") as file :
+        for line in file :
+            line = "".join([c for c in line if c != "\n"])
+            size = len(line)
+            S_index = int((size - 1) / 2)
+            if "^" in line :
+                dict = {}
+                for i, c in enumerate(line) :
+                    if c == "^" :
+                        dict[i] = [i-1,i+1]
+                splitters.append(dict)
+    beams = {S_index: 1}
+    used_splitters = set()
+    for i, splitter in tqdm(enumerate(splitters)) :
+        new_beams = {}
+        for beam in beams :
+            new_beam = splitter.get(beam,[beam])
+            if new_beam != [beam] :
+                used_splitters.add((i,beam))
+            for b in new_beam :
+                new_beams[b] = new_beams.get(b,0) + beams[beam]
+        beams = new_beams
+        print(beams)
+    print(len(used_splitters))
+
+
+
+def main71() :
+    S_index = -1
+    splitters = []
+    with open("AoC\\2025\\input7.txt", "r") as file :
+        for line in file :
+            line = "".join([c for c in line if c != "\n"])
+            S_index = int((len(line) - 1) / 2)
+            if "^" in line :
+                dict = {}
+                for i, c in enumerate(line) :
+                    if c == "^" :
+                        dict[i] = [i-1,i+1]
+                splitters.append(dict)
+    beams = {S_index: 1}
+    for i, splitter in enumerate(splitters) :
+        new_beams = {}
+        for beam in beams :
+            new_beam = splitter.get(beam,[beam])
+            for b in new_beam :
+                new_beams[b] = new_beams.get(b,0) + beams[beam]
+        beams = new_beams
+    acc = 0
+    for beam in beams :
+        acc += beams[beam]
+    print(acc)
+
+
+
+def main80() :
+    points = {}
+    with open("AoC\\2025\\input8.txt", "r") as file :
+        for i, line in enumerate(file) :
+            line = "".join([c for c in line if c != "\n"])
+            corrds = [int(corrd) for corrd in line.split(",")]
+            points[i] = corrds
+    dist_dict = {}
+    dist_list = []
+    for i in range(len(points)-1) :
+        for j in range(i+1, len(points)) :
+            distans = sum([(x1-x2)**2 for x1,x2 in list(zip(points[i], points[j]))])
+            dist_dict[(i,j)] = distans
+            dist_list.append(((i,j),distans))
+    dist_list.sort(key= lambda x : x[1])
+    
+    conections = {}
+    total_connections = 0
+    for i in range(len(points)) :
+        conections[i] = []
+    for (i, j), d in dist_list :
+        lowest_con_i = -1
+        lowest_con_j = -1
+        con_i = conections.get(i)
+        con_j = conections.get(j)
+        if len(con_i) == 0 :
+            lowest_con_i = i
+        else :
+            con_i.sort()
+            lowest_con_i = con_i[0]
+            if i < lowest_con_i :
+                lowest_con_i = i
+            
+        if len(con_j) == 0 :
+            conections[j].append(lowest_con_i)
+            conections[lowest_con_i].append(j)
+        else :
+            con_j.sort()
+            lowest_con_j = con_j[0]
+            if j < lowest_con_j :
+                lowest_con_j = j
+            index_to_dominate = -1
+            index_to_merge = -1
+            if lowest_con_i != lowest_con_j :
+                if lowest_con_i < lowest_con_j :
+                    index_to_dominate = lowest_con_i
+                    index_to_merge = lowest_con_j
+                else :
+                    index_to_dominate = lowest_con_j
+                    index_to_merge = lowest_con_i
+                for index in conections[index_to_merge] :
+                    conections[index_to_dominate].append(index)
+                    conections[index] = [index_to_dominate]
+                conections[index_to_dominate].append(index_to_merge)
+                conections[index_to_merge] = [index_to_dominate]
+        total_connections += 1
+        if total_connections >= 1000 :
+            break 
+    size_circuits = []
+    for i in conections :
+        size_circuits.append(len(conections[i]) + 1)
+    size_circuits.sort(reverse=True)
+    # print(size_circuits)
+    sol = 1
+    for size in size_circuits[:3] :
+        sol *= size
+    print(sol)
+
+
+
+def main81() :
+    points = {}
+    with open("AoC\\2025\\input8.txt", "r") as file :
+        for i, line in enumerate(file) :
+            line = "".join([c for c in line if c != "\n"])
+            corrds = [int(corrd) for corrd in line.split(",")]
+            points[i] = corrds
+    dist_dict = {}
+    dist_list = []
+    for i in range(len(points)-1) :
+        for j in range(i+1, len(points)) :
+            distans = sum([(x1-x2)**2 for x1,x2 in list(zip(points[i], points[j]))])
+            dist_dict[(i,j)] = distans
+            dist_list.append(((i,j),distans))
+    dist_list.sort(key= lambda x : x[1])
+    
+    conections = {}
+    total_connections = 0
+    last_connection = (-1,-1)
+    for i in range(len(points)) :
+        conections[i] = []
+    for (i, j), d in dist_list :
+        lowest_con_i = -1
+        lowest_con_j = -1
+        con_i = conections.get(i)
+        con_j = conections.get(j)
+        if len(con_i) == 0 :
+            lowest_con_i = i
+        else :
+            con_i.sort()
+            lowest_con_i = con_i[0]
+            if i < lowest_con_i :
+                lowest_con_i = i
+            
+        if len(con_j) == 0 :
+            conections[j].append(lowest_con_i)
+            conections[lowest_con_i].append(j)
+        else :
+            con_j.sort()
+            lowest_con_j = con_j[0]
+            if j < lowest_con_j :
+                lowest_con_j = j
+            index_to_dominate = -1
+            index_to_merge = -1
+            if lowest_con_i != lowest_con_j :
+                if lowest_con_i < lowest_con_j :
+                    index_to_dominate = lowest_con_i
+                    index_to_merge = lowest_con_j
+                else :
+                    index_to_dominate = lowest_con_j
+                    index_to_merge = lowest_con_i
+                for index in conections[index_to_merge] :
+                    conections[index_to_dominate].append(index)
+                    conections[index] = [index_to_dominate]
+                conections[index_to_dominate].append(index_to_merge)
+                conections[index_to_merge] = [index_to_dominate]
+        total_connections += 1
+        if len(conections[0]) >= len(points) - 1 :
+            last_connection = (i,j)
+            break 
+    # size_circuits = []
+    # for i in conections :
+    #     size_circuits.append(len(conections[i]) + 1)
+    # size_circuits.sort(reverse=True)
+    # # print(size_circuits)
+    # sol = 1
+    # for size in size_circuits[:3] :
+    #     sol *= size
+    sol = points[last_connection[0]][0] * points[last_connection[1]][0]
+    print(sol)
+
+
+
+def main90() :
+    points = []
+    with open("AoC\\2025\\input9.txt", "r") as file :
+        for i, line in enumerate(file) :
+            line = "".join([c for c in line if c != "\n"])
+            corrds = [int(corrd) for corrd in line.split(",")]
+            points.append(corrds)
+    areas = []
+    for p1 in range(len(points)-1) :
+        for p2 in range(p1+1,len(points)) :
+            dx = abs(points[p1][0]-points[p2][0]+1)
+            dy = abs(points[p1][1]-points[p2][1]+1)
+            areas.append(dx*dy)
+    areas.sort(reverse=True)
+    print(areas[0])
+
+
+
+def main91() :
+    points = []
+    with open("AoC\\2025\\input9_test.txt", "r") as file :
+        for i, line in enumerate(file) :
+            line = "".join([c for c in line if c != "\n"])
+            corrds = [int(corrd) for corrd in line.split(",")]
+            points.append(corrds)
+    areas = []
+    for p1 in range(len(points)-1) :
+        for p2 in range(p1+1,len(points)) :
+            dx = abs(points[p1][0]-points[p2][0]+1)
+            dy = abs(points[p1][1]-points[p2][1]+1)
+            areas.append(dx*dy)
+    areas.sort(reverse=True)
+    print(areas[0])
+
+main91()
