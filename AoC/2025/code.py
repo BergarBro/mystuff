@@ -111,7 +111,7 @@ def main31() :
     print(sum(sol))
 
 def makeInput() :
-    with open("AoC\\2025\\data.txt", "w") as file:
+    with open("AoC\\2025\\data3.txt", "w") as file:
         for i in range(20) :
             n = 0
             while "0" in str(n) :
@@ -567,12 +567,14 @@ def main91() :
     # print("färdig med grid")
     nbr_points = len(points)
     grid = {}
+    grid2 = {}
     u_counter = set()
     # print_grid(grid, biggest_x+2, biggest_y+3)
     for i, point in enumerate(points) :
         print(i+1, "out of", nbr_points, end='\r')
         x,y = point
         grid[(x,y)] = "#"
+        grid2[(x,y)] = "#"
         oldx, oldy = points[i-1]
         start_int, end_int, const = (-1,-1,-1)
         direction = 0
@@ -596,19 +598,25 @@ def main91() :
                 start_int = x
                 end_int = oldx
                 direction = -1
-        for j in range(start_int, end_int+1) :
+        for j in range(start_int+1, end_int) :
             if x == oldx :
                 if grid.get((const-direction,j),".") == "." :
                     grid[(const-direction,j)] = "U"
                     u_counter.add((const-direction,j))
+                if "U" in grid.get((const,j),".") or "I" in grid.get((const,j),".") :
+                    print("Collition")
                 grid[(const,j)] = "X"
+                grid2[(const,j)] = "*"
                 if grid.get((const+direction,j),".") == "." :
                     grid[(const+direction,j)] = "I"
             else :
                 if grid.get((j,const-direction),".") == "." :
                     grid[(j,const-direction)] = "U"
                     u_counter.add((j,const-direction))
+                if "U" in grid.get((j,const),".") or "I" in grid.get((j,const),".") :
+                    print("Collition")
                 grid[(j,const)] = "X"
+                grid2[(j,const)] = "*"
                 if grid.get((j,const+direction),".") == "." :
                     grid[(j,const+direction)] = "I"
     print()
@@ -617,8 +625,8 @@ def main91() :
     areas = []
     for p1 in range(len(points)-1) :
         for p2 in range(p1+1,len(points)) :
-            dx = abs(points[p1][0]-points[p2][0]+1)
-            dy = abs(points[p1][1]-points[p2][1]+1)
+            dx = abs(points[p1][0]-points[p2][0])+1
+            dy = abs(points[p1][1]-points[p2][1])+1
             areas.append((dx*dy,(points[p1],points[p2])))
     areas.sort(reverse=True)
     sol = -1
@@ -645,13 +653,68 @@ def main91() :
                     break
         if valid :
             sol = area
+            grid2[(x1,y1)] = "O"
+            grid2[(x2,y2)] = "O"
             break
+    # print_grid(grid, biggest_x+2, biggest_y+3)
+    # print_grid(grid2, biggest_x+2, biggest_y+3)
     print()
     print(sol)
 
 def print_grid(grid, x_size, y_size) :
-    new_grid = [[grid.get((i,j),".") for i in range(x_size)] for j in range(y_size)]
+    new_grid = [[grid.get((i,j)," ") for i in range(x_size)] for j in range(y_size)]
     for row in new_grid :
         print("".join(row))
 
-main91()
+def generateInput9() :
+    mod = 20
+    with open("AoC\\2025\\data9.txt", "w") as file:
+            first = 1
+            second = 1
+            file.write(str(first) + "," + str(second) + "\n")
+            for i in range(3) :
+                first = int((first + rn.randint(2,mod-2)) % mod)
+                file.write(str(first) + "," + str(second) + "\n")
+                second = int((second + rn.randint(2,mod-2)) % mod)
+                file.write(str(first) + "," + str(second) + "\n")
+            file.write(str(1) + "," + str(second) + "\n")
+
+
+
+def main100() :
+    machines = []
+    with open("AoC\\2025\\input10_test.txt", "r") as file :
+        for i, line in enumerate(file) :
+            line = "".join([c for c in line if c != "\n"])
+            machine = []
+            buttons = []
+            for elem in line.split(" ") :
+                if "[" in elem :
+                    lamps = [1 if c == "#" else 0 for c in elem[1:-1]]
+                    machine.append(lamps)
+                elif "(" in elem :
+                    button = [1 if str(n) in elem else 0 for n in range(len(lamps))]
+                    buttons.append(button)
+                else :
+                    machine.append(buttons)
+                    machine.append([int(n) for n in elem[1:-1].split(",")])
+            machines.append(machine)
+    sol = []
+    for lamps, buttons, joltages in machines :
+        buttons.sort(reverse=True)
+        j = 0
+        res = [0 for n in range(len(lamps))]
+        acc = 0
+        for i in range(len(lamps)) :
+            lamp = lamps[i]
+            for k in range(j,len(buttons)) :
+                button = buttons[k]
+                if res[i] == lamp :
+                    break 
+                else :
+                    if button[i] == 1 :
+                        res = [(res[n] + button[n]) % 2 for n in range(len(lamps))]
+                        acc += 1
+        sol.append((acc, res))
+    print(sol)
+main100()
