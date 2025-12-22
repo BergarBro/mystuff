@@ -717,4 +717,8 @@ def main100() :
                         acc += 1
         sol.append((acc, res))
     print(sol)
+
+def add(l1, l2) :
+    return [(l1[i] + l2[i]) % 2 for i in range(len(l1))]
+
 main100()
