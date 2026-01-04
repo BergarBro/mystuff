@@ -681,7 +681,56 @@ def generateInput9() :
 
 
 
+## Does a lot of dubbel counting, want to fix that!
 def main100() :
+    machines = []
+    with open("AoC\\2025\\input10.txt", "r") as file :
+        for i, line in enumerate(file) :
+            line = "".join([c for c in line if c != "\n"])
+            machine = []
+            buttons = []
+            for elem in line.split(" ") :
+                if "[" in elem :
+                    lamps = [1 if c == "#" else 0 for c in elem[1:-1]]
+                    machine.append(lamps)
+                elif "(" in elem :
+                    button = [1 if str(n) in elem else 0 for n in range(len(lamps))]
+                    buttons.append(button)
+                else :
+                    machine.append(buttons)
+                    machine.append([int(n) for n in elem[1:-1].split(",")])
+            machines.append(machine)
+    sol = 0
+    
+    for i, (lamps, buttons, joltages) in enumerate(machines) :
+        print(i+1, "out of", len(machines), end='\r')
+        combs = [[0]*len(lamps)]
+        presses = 0
+        check = True
+        while check :
+            presses += 1
+            temp = []
+            for comb in combs :
+                for button in buttons :
+                    new_comb = addMod(comb, button)
+                    if new_comb != lamps :
+                        temp.append(new_comb)
+                    else :
+                        check = False
+                        break
+                if not check :
+                    break
+            combs = temp
+        sol += presses
+    print()
+    print(sol)
+
+def addMod(l1, l2) :
+    return [(l1[i] + l2[i]) % 2 for i in range(len(l1))]
+
+
+# Not Working...
+def main101() :
     machines = []
     with open("AoC\\2025\\input10_test.txt", "r") as file :
         for i, line in enumerate(file) :
@@ -700,25 +749,142 @@ def main100() :
                     machine.append([int(n) for n in elem[1:-1].split(",")])
             machines.append(machine)
     sol = []
-    for lamps, buttons, joltages in machines :
-        buttons.sort(reverse=True)
-        j = 0
-        res = [0 for n in range(len(lamps))]
-        acc = 0
-        for i in range(len(lamps)) :
-            lamp = lamps[i]
-            for k in range(j,len(buttons)) :
-                button = buttons[k]
-                if res[i] == lamp :
-                    break 
-                else :
-                    if button[i] == 1 :
-                        res = [(res[n] + button[n]) % 2 for n in range(len(lamps))]
-                        acc += 1
-        sol.append((acc, res))
+    
+    for i, (lamps, buttons, joltages) in enumerate(machines) :
+        print(i+1, "out of", len(machines), end='\r')
+        combs = [[0]*len(joltages)]
+        presses = 0
+        check = True
+        while check :
+            presses += 1
+            temp = []
+            for comb in combs :
+                for button in buttons :
+                    new_comb = add(comb, button)
+                    if new_comb != joltages :
+                        temp.append(new_comb)
+                    else :
+                        check = False
+                        break
+                if not check :
+                    break
+            combs = temp
+        print()
+        print(presses)
+        sol.append(presses)
+    print()
     print(sol)
+    print(sum(sol))
 
 def add(l1, l2) :
-    return [(l1[i] + l2[i]) % 2 for i in range(len(l1))]
+    return [(l1[i] + l2[i]) for i in range(len(l1))]
 
-main100()
+
+
+def main110() :
+    nodes = []
+    dict = {}
+    you = -1
+    out = -1
+    with open("AoC\\2025\\input11.txt", "r") as file :
+        for i, line in enumerate(file) :
+            line = "".join([c for c in line if c != "\n"])
+            temp = []
+            for node in line.split(" ") :
+                if ":" in node :
+                    dict[node[:-1]] = len(dict)
+                else :
+                    temp.append(node)
+            nodes.append(temp)
+        you = dict["you"]
+        out = len(dict)
+        nodes = [[dict[con] if con != "out" else out for con in node] for node in nodes]
+    
+    current = [you]
+
+    while set(current) != set([out]) :
+        temp = []
+        for node in current :
+            if node != out :
+                temp += nodes[node]
+            else :
+                temp += [node]
+        current = temp
+    print(len(current))
+
+
+
+def main111() :
+    nodes = []
+    dict = {}
+    svr = -1
+    out = -1
+    fft = -1
+    dac = -1
+    with open("AoC\\2025\\input11.txt", "r") as file :
+        for i, line in enumerate(file) :
+            line = "".join([c for c in line if c != "\n"])
+            temp = []
+            for node in line.split(" ") :
+                if ":" in node :
+                    dict[node[:-1]] = len(dict)
+                else :
+                    temp.append(node)
+            nodes.append(temp)
+        svr = dict["svr"]
+        fft = dict["fft"]
+        dac = dict["dac"]
+        out = len(dict)
+        nodes = [[dict[con] if con != "out" else out for con in node] for node in nodes]
+    
+    current_no = [svr]
+    current_fft = []
+    current_dac = []
+    current_done = []
+
+    while set(current_no).union(set(current_fft)).union(set(current_dac)).union(set(current_done)) != set([out]) :
+        print("Size of Nodes:", len(current_no) + len(current_fft) + len(current_dac) + len(current_done), end='\r')
+        temp_no = []
+        temp_fft = []
+        temp_dac = []
+        temp_done = []
+        for node in current_no :
+            if node == out :
+                print("Be Gone")
+            elif node == fft :
+                temp_fft += nodes[node]
+            elif node == dac :
+                temp_dac += nodes[node]
+            else :
+                temp_no += nodes[node]
+        
+        for node in current_fft :
+            if node == out :
+                print("Be Gone")
+            elif node == dac :
+                temp_done += nodes[node]
+            else :
+                temp_fft += nodes[node]
+        
+        for node in current_dac :
+            if node == out :
+                print("Be Gone")
+            elif node == fft :
+                temp_done += nodes[node]
+            else :
+                temp_dac += nodes[node]
+
+        for node in current_done :
+            if node == out :
+                temp_done += [node]
+            else :
+                temp_done += nodes[node]
+
+        current_no = temp_no
+        current_fft = temp_fft
+        current_dac = temp_dac
+        current_done = temp_done
+    print()
+    print(len(current_done))
+
+main111()
