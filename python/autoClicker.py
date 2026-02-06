@@ -72,7 +72,7 @@ def runRecording() :
             time.sleep(float(delay) + rd.random()*0.5)
             if not programStatus :
                 break
-        timeToWait = 60
+        timeToWait = 5
         if programStatus :
             for i in range(timeToWait*10) :
                 time.sleep(0.1)
